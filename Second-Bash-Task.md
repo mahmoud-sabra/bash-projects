@@ -2,14 +2,14 @@
 
 ```
 # To pass arguments to a Bash script, you can use the special variables: $1, $2, $3, # for the first, second, third arguments, and so on.
-ex:
+# ex:
 
 #!/bin/bash
 
 echo "First argument: $1"
 echo "Second argument: $2"
 echo "Third argument: $3"
-
+echo "ALL Argument: $*"
 ```
 
 
@@ -120,7 +120,7 @@ echo "The file $filename is of type: $file_type"
 ```
 # How to use for, while, and until loops
 ```
-for arg in [list] ; do
+for arg in [list] ; do .... done
 while [ condition ] ; do command(s)... done
 until [condition] ; do ... done
 
@@ -129,17 +129,13 @@ examples:
 #!/bin/bash
 
 # Example using a for loop to iterate through an array
-fruits=("apple" "banana" "cherry" "date")
-
-for fruit in "${fruits[@]}"; do
-    echo "Fruit: $fruit"
-done
 
 ---- 
 # while
 #!/bin/bash
 
 # Example using a while loop to count from 1 to 5
+
 counter=1
 
 while [ "$counter" -le 5 ]; do
@@ -244,16 +240,16 @@ example:
 day="Monday"
 
 case "$day" in
-    "Monday")
+    "Monday" )
         echo "It's the start of the week."
         ;;
-    "Tuesday"|"Wednesday"|"Thursday")
+    "Tuesday"|"Wednesday"|"Thursday" )
         echo "It's a workday."
         ;;
-    "Friday")
+    "Friday" )
         echo "It's almost the weekend."
         ;;
-    "Saturday"|"Sunday")
+    "Saturday"|"Sunday" )
         echo "It's the weekend."
         ;;
     *)
@@ -383,4 +379,314 @@ awk -F: '{sum += $3} END {print "Sum of UIDs:", sum}' ~/new-passwd-file
 ```
 # Get the sum of account IDs with the same group:
 awk -F: '{group_sum[$4] += $3} END {for (group in group_sum) print group, group_sum[group]}' ~/new-passwd-file
+```
+---- 
+
+# tr: replace uppercase letters with lowercase letters and vice versa
+
+```
+# example  
+echo "Hello World" | tr 'a-zA-Z' 'A-Za-z'
+```
+
+# Sort: sort the ~/new-passwd-file on gid/uid
+
+```
+sort -t: -k3,3n -k4,4n ~/new-passwd-file ####
+```
+# split
+
+The split command is used to split a file into smaller pieces. It's often used to break up large files for easier transfer or storage. The command's basic syntax is:
+
+```
+split [options] input_file [prefix]
+split -b 1M fileName part
+```
+# uniq
+
+The uniq command is used to filter out adjacent duplicate lines from a sorted file. The command's basic syntax is:
+
+```
+uniq [options] [input_file [output_file]]
+```
+
+For example, to display unique lines from a sorted file named data.txt, you can use:
+```
+sort data.txt | uniq
+```
+
+# expr
+
+The `expr` command is used to evaluate expressions. It's often used for basic arithmetic calculations. The command's basic syntax is:
+
+```
+expr expression
+result=$(expr 5 + 3)
+echo "Result: $result"
+```
+# paste
+
+The `paste` command is used to merge lines from different files. The command's basic syntax is:
+ 
+```
+ paste [options] [file...]
+# example: to merge two files, `file1.txt` and `file2.txt`, with a tab as the separator:
+
+paste -d '\t' file1.txt file2.txt`
+```
+# test
+The `test` command is used to evaluate conditional expressions in shell scripts. It's often used in conjunction with `if` statements. The command's basic syntax is
+
+```
+test condition
+if test -e myfile.txt; then
+    echo "File exists"
+fi
+```
+
+# whatis
+The `whatis` command is used to display a brief description of a command from the manual pages. The command's basic syntax is:
+
+```
+whatis command
+```
+# whereis
+The `whereis` command is used to locate binary, source, and manual page files for a command. The command's basic syntax is
+
+```
+whereis command
+```
+# which
+The `which` command is used to locate the executable file associated with a command. The command's basic syntax is
+
+```
+which command
+```
+
+# make your ls (check for type: file/dir, permission: read/write/execute).
+
+```
+#!/bin/bash
+
+for item in "$@"; do
+    if [ -f "$item" ]; then
+        type="File"
+    elif [ -d "$item" ]; then
+        type="Directory"
+    else
+        type="Unknown"
+    fi
+    
+    permissions=""
+    if [ -r "$item" ]; then
+        permissions+="r"
+    else
+        permissions+="-"
+    fi
+    if [ -w "$item" ]; then
+        permissions+="w"
+    else
+        permissions+="-"
+    fi
+    if [ -x "$item" ]; then
+        permissions+="x"
+    else
+        permissions+="-"
+    fi
+    
+    echo "Item: $item"
+    echo "Type: $type"
+    echo "Permissions: $permissions"
+    echo "---"
+done
+
+
+```
+
+# check type of data entered by the user (string , numbers, mixed).
+
+```
+#!/bin/bash
+
+read -p "Enter some data: " input
+
+# Check if the input is numeric
+if [[ "$input" =~ ^[0-9]+$ ]]; then
+    echo "Numeric input"
+# Check if the input is alphabetic
+elif [[ "$input" =~ ^[a-zA-Z]+$ ]]; then
+    echo "Alphabetic input"
+# If not purely numeric or alphabetic, it's considered mixed
+else
+    echo "Mixed input"
+fi
+
+```
+# make 2 nested script set the value of var variable in each and display its value before and after setting (once using export and other using sourcing)
+
+```
+#!/bin/bash
+
+echo "Hello : var = $var"
+
+export var="With Out Sourcing"
+
+./inner_script.sh
+
+echo "Outer Script - After: var = $var"
+
+-------------
+inner_script.sh
+-------------
+#!/bin/bash
+
+echo "Inner Script : var = $var"
+
+```
+
+# make a script mycat which use the option -n only
+
+```
+#!/bin/bash
+
+line_number=1
+
+while IFS= read -r line; do
+    echo "$line_number: $line"
+    ((line_number++))
+done < "$1"
+####
+```
+
+# make a small menu  to chose: making more to a file or cat on it or exit.
+```
+#!/bin/bash
+
+while true; do
+    echo "Menu:"
+    echo "1. Append to a file"
+    echo "2. Display file content"
+    echo "3. Exit"
+
+    read -p "Enter your choice: " choice
+
+    case $choice in
+        1)
+            read -p "Enter the filename: " filename
+            read -p "Enter text to append: " text
+            echo "$text" >> "$filename"
+            echo "Text appended to $filename"
+            ;;
+        2)
+            read -p "Enter the filename: " filename
+            if [ -f "$filename" ]; then
+                cat "$filename"
+            else
+                echo "File not found"
+            fi
+            ;;
+        3)
+            echo "Exiting"
+            break
+            ;;
+        *)
+            echo "Invalid choice"
+            ;;
+    esac
+done
+
+```
+
+# make a menu for data entry : check data type validity.
+```
+#!/bin/bash
+
+while true; do
+    echo "Data Entry Menu:"
+    echo "1. Enter numeric data"
+    echo "2. Enter alphabetic data"
+    echo "3. Exit"
+
+    read -p "Enter your choice: " choice
+
+    case $choice in
+        1)
+            read -p "Enter numeric data: " data
+            if [[ "$data" =~ ^[0-9]+$ ]]; then
+                echo "Valid numeric data"
+            else
+                echo "Invalid data"
+            fi
+            ;;
+        2)
+            read -p "Enter alphabetic data: " data
+            if [[ "$data" =~ ^[a-zA-Z]+$ ]]; then
+                echo "Valid alphabetic data"
+            else
+                echo "Invalid data"
+            fi
+            ;;
+        3)
+            echo "Exiting"
+            break
+            ;;
+        *)
+            echo "Invalid choice"
+            ;;
+    esac
+done
+
+```
+
+# display all the arguments to a script in large size
+```
+
+#!/bin/bash
+
+echo "Arguments passed to the script in large size:"
+echo "-------------------------------------------"
+
+for arg in "$@"; do
+    echo "    $arg"
+done
+
+echo "-------------------------------------------"
+echo "Display complete."
+########
+```
+
+# Display the total number of arguments in large size.
+```
+#!/bin/bash
+
+count="$#"
+
+echo "Total number of arguments: $count"
+
+echo "Arguments passed to the script:"
+echo "--------------------------------"
+
+for arg in "$@"; do
+    echo "    $arg"
+done
+
+echo "--------------------------------"
+echo "Display complete."
+
+```
+# promptuser -> if string print Hello , if number add 10
+```
+#!/bin/bash
+
+read -p "Enter something: " input
+
+if [[ "$input" =~ ^[0-9]+$ ]]; then
+    result=$((input + 10))
+    echo "Result: $result"
+elif [[ "$input" =~ ^[a-zA-Z]+$ ]]; then
+    echo "Hello"
+else
+    echo "Mixed input"
+fi
+
 ```
